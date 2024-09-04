@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import  AppWalletProvider  from "../components/AppWalletProvider";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +18,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className + " px-2"}>{children}</body>
+      <body>
+        <AppWalletProvider>{children}</AppWalletProvider>
+      </body>
     </html>
   );
 }

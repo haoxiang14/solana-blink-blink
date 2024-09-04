@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import  AppWalletProvider  from "../components/AppWalletProvider";
+import AppWalletProvider from "../components/AppWalletProvider";
+import { Header } from "@/components/header";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -18,8 +19,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
-        <AppWalletProvider>{children}</AppWalletProvider>
+      <body className="px-2">
+        <AppWalletProvider>
+          <Header />
+          <main className="max-w-6xl mx-auto">
+            {children}
+          </main>
+        </AppWalletProvider>
       </body>
     </html>
   );

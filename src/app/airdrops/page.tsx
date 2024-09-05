@@ -17,6 +17,7 @@ async function fetchAirdrops() {
 
 export default async function Airdrops() {
   const airdrops = await fetchAirdrops()
+  console.log(airdrops)
 
   async function createAirdrop(_formData: FormData) {
     'use server'

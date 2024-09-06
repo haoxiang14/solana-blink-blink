@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { CopyButton } from "./copyButton";
+import { Keypair } from "@solana/web3.js";
 
 async function fetchAirdrop(airdropId: string) {
   const supabase = createClient()
@@ -33,8 +34,11 @@ export default async function Airdrop({ params }: { params: { airdropId: string 
 
   const headersList = headers()
   const host = headersList.get('host')
-  const actionUrl = `${host}/airdrops/${airdropId}/action`
-  const blinksUrl = `${host}?action=solana-action:${encodeURIComponent(actionUrl)}`
+  const actionUrl = `solana-action:${host}/airdrops/${airdropId}/action`
+  const blinksUrl = `${host}?action=${encodeURIComponent(actionUrl)}`
+
+  const secretKey = new Uint8Array(airdrop.secret.split(',').map((s) => parseInt(s)))
+  const account = Keypair.fromSecretKey(secretKey)
 
   // TODO: form success/error confirmation toast
   async function updateAirdrop(formData: FormData) {
@@ -66,6 +70,7 @@ export default async function Airdrop({ params }: { params: { airdropId: string 
             <h1 className="text-lg font-bold">Airdrop</h1>
             <CopyButton url={blinksUrl} />
           </div>
+          <p>Transfer your funds to this address: {account.publicKey.toString()}</p>
           <form action={updateAirdrop} className="flex flex-col gap-4">
             <p className="text-muted-foreground">Airdrop Details</p>
             <div className="space-y-1">

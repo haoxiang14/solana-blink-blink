@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase';
-import { ActionError, ActionGetResponse, createActionHeaders } from '@solana/actions'
+import { ActionError, ActionGetResponse, ActionPostRequest, ActionPostResponse, createActionHeaders, createPostResponse } from '@solana/actions'
+import { clusterApiUrl, Connection, Keypair, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from '@solana/web3.js';
 
 const headers = createActionHeaders();
 
@@ -79,11 +80,56 @@ export async function POST(request: Request, { params }: { params: { airdropId: 
     }
 
     const requestUrl = new URL(request.url);
-    const baseHref = new URL(`/airdrops/${airdropId}/action`, requestUrl.origin).toString();
+    const password = requestUrl.searchParams.get('password')
 
-    // TODO: implement transfer based on airdrop details
+    if (airdrop.password && airdrop.password.length > 0) {
+      if (password !== airdrop.password) {
+        throw "Invalid password"
+      }
+    }
 
-    return Response.json({ message: 'Unimplemented' }, { headers })
+    const body: ActionPostRequest = await request.json();
+
+    // from
+    const secretKey = new Uint8Array(airdrop.secret.split(',').map((s) => parseInt(s)))
+    const from = Keypair.fromSecretKey(secretKey)
+
+    // to
+    let to: PublicKey;
+    try {
+      to = new PublicKey(body.account)
+    } catch (err) {
+      throw 'Invalid "account" provided'
+    }
+
+    const connection = new Connection(process.env.SOLANA_RPC! || clusterApiUrl("devnet"))
+
+    // TODO: get token type from airdrop and check balance of token in wallet
+
+    const transferSolInstruction = SystemProgram.transfer({
+      fromPubkey: from.publicKey,
+      toPubkey: to,
+      lamports: airdrop.amount * LAMPORTS_PER_SOL,
+    });
+
+    const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
+
+    const transaction = new Transaction({
+      feePayer: from.publicKey,
+      blockhash,
+      lastValidBlockHeight,
+    }).add(transferSolInstruction);
+
+    const payload: ActionPostResponse = await createPostResponse({
+      fields: {
+        transaction,
+        message: `Send ${airdrop.amount} SOL to ${to.toBase58()}`,
+      },
+    });
+
+    return Response.json(payload, {
+      headers,
+    });
   } catch (error) {
     let actionError: ActionError = { message: "An unknown error occurred" };
     if (typeof error == "string") actionError.message = error;

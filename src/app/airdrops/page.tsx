@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase";
 import { PlusIcon } from '@radix-ui/react-icons'
+import { Keypair } from "@solana/web3.js";
 
 async function fetchAirdrops() {
   const supabase = createClient()
@@ -22,7 +23,14 @@ export default async function Airdrops() {
   async function createAirdrop(_formData: FormData) {
     'use server'
     const supabase = createClient()
-    const { data, error } = await supabase.from('airdrops').insert({}).select('airdrop_id').single()
+    const secret = Keypair.fromSeed(crypto.getRandomValues(new Uint8Array(32)))
+
+    const { data, error } = await supabase
+      .from('airdrops')
+      .insert({ secret: secret.secretKey.toString() })
+      .select('airdrop_id')
+      .single()
+
     if (error) {
       console.log(error)
       return {

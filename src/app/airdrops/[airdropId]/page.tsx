@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Switch } from "@/components/ui/switch";
 import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import SelectToken from "@/components/SelectToken";
+
 import { createClient } from "@/lib/supabase";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
@@ -69,6 +71,10 @@ export default async function Airdrop({ params }: { params: { airdropId: string 
             <div className="space-y-1">
               <Label htmlFor="name">Name*</Label>
               <Input id="name" name="name" required placeholder="APUBCC Event" defaultValue={airdrop.name} />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="name">Token*</Label>
+              <SelectToken />
             </div>
             <div className="space-y-1">
               <Label htmlFor="total">Total*</Label>

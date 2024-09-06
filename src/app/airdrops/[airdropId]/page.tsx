@@ -8,6 +8,8 @@ import { QuestionMarkCircledIcon } from "@radix-ui/react-icons";
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { createClient } from "@/lib/supabase";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { CopyButton } from "./copyButton";
 
 async function fetchAirdrop(airdropId: string) {
   const supabase = createClient()
@@ -26,6 +28,11 @@ export default async function Airdrop({ params }: { params: { airdropId: string 
   if (!airdrop) {
     return redirect('/airdrops')
   }
+
+  const headersList = headers()
+  const host = headersList.get('host')
+  const actionUrl = `${host}/airdrops/${airdropId}/action`
+  const blinksUrl = `${host}?action=solana-action:${encodeURIComponent(actionUrl)}`
 
   // TODO: form success/error confirmation toast
   async function updateAirdrop(formData: FormData) {
@@ -55,7 +62,7 @@ export default async function Airdrop({ params }: { params: { airdropId: string 
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <h1 className="text-lg font-bold">Airdrop</h1>
-            <Button variant="outline" type="button">Share Blinks</Button>
+            <CopyButton url={blinksUrl} />
           </div>
           <form action={updateAirdrop} className="flex flex-col gap-4">
             <p className="text-muted-foreground">Airdrop Details</p>
